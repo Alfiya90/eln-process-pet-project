@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0nsywii" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.16.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:process id="eln_process_v1" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_05vcy7r</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="Event_0wej9jt">
+      <bpmn:incoming>Flow_0gta5mc</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_05vcy7r" sourceRef="StartEvent_1" targetRef="define_eln" />
+    <bpmn:sequenceFlow id="Flow_1tdryi2" sourceRef="define_eln" targetRef="Gateway_1ystft4" />
+    <bpmn:serviceTask id="define_eln" name="Получениние информции об ЭЛН" camunda:class="com.example.elnprocesspetproject.delegates.ElnDefineDelegate">
+      <bpmn:incoming>Flow_05vcy7r</bpmn:incoming>
+      <bpmn:outgoing>Flow_1tdryi2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_1ystft4" default="Flow_0lxgtds">
+      <bpmn:incoming>Flow_1tdryi2</bpmn:incoming>
+      <bpmn:outgoing>Flow_0lxgtds</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1svyloj</bpmn:outgoing>
+      <bpmn:outgoing>Flow_114vlns</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0y58vcc</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0lxgtds" sourceRef="Gateway_1ystft4" targetRef="Activity_1o3kgis" />
+    <bpmn:sequenceFlow id="Flow_0gta5mc" sourceRef="Activity_1o3kgis" targetRef="Event_0wej9jt" />
+    <bpmn:sequenceFlow id="Flow_1svyloj" sourceRef="Gateway_1ystft4" targetRef="Activity_0pnf0jk">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${state !=  '030' &amp;&amp; status == 'SUSPENDED' &amp;&amp; wait_time == 0}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:task id="Activity_1vemedj" name="Закрытие процесса">
+      <bpmn:incoming>Flow_114vlns</bpmn:incoming>
+      <bpmn:outgoing>Flow_0kcd62x</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_114vlns" sourceRef="Gateway_1ystft4" targetRef="Activity_1vemedj">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${status == 'CLOSED'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:intermediateCatchEvent id="Event_1jfm8hw" name="Ожидание даты начала СС">
+      <bpmn:extensionElements>
+        <camunda:failedJobRetryTimeCycle />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0y58vcc</bpmn:incoming>
+      <bpmn:outgoing>Flow_1geuuff</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0j6vraq">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT${wait_time}M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_1geuuff" sourceRef="Event_1jfm8hw" targetRef="Activity_1o3kgis" />
+    <bpmn:sequenceFlow id="Flow_0y58vcc" sourceRef="Gateway_1ystft4" targetRef="Event_1jfm8hw">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${status == 'SUSPENDED' &amp;&amp; state ==  '030' &amp;&amp;  wait_time != 0 }</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="Activity_1o3kgis" name="Идем дальше" camunda:class="com.example.elnprocesspetproject.delegates.InsuredGeneralInfoDelegate">
+      <bpmn:incoming>Flow_0lxgtds</bpmn:incoming>
+      <bpmn:incoming>Flow_1geuuff</bpmn:incoming>
+      <bpmn:incoming>Flow_18gs62p</bpmn:incoming>
+      <bpmn:outgoing>Flow_0gta5mc</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_18gs62p" sourceRef="Activity_0pnf0jk" targetRef="Activity_1o3kgis" />
+    <bpmn:serviceTask id="Activity_0pnf0jk" name="Ожидание статуса 030" camunda:class="com.example.elnprocesspetproject.delegates.WaiElnState030">
+      <bpmn:incoming>Flow_1svyloj</bpmn:incoming>
+      <bpmn:outgoing>Flow_18gs62p</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_0uofjk1">
+      <bpmn:incoming>Flow_0kcd62x</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0kcd62x" sourceRef="Activity_1vemedj" targetRef="Event_0uofjk1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="eln_process_v1">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="309" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vcjyyf_di" bpmnElement="define_eln">
+        <dc:Bounds x="270" y="287" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1ystft4_di" bpmnElement="Gateway_1ystft4" isMarkerVisible="true">
+        <dc:Bounds x="415" y="302" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0wej9jt_di" bpmnElement="Event_0wej9jt">
+        <dc:Bounds x="982" y="309" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0jzmoxr_di" bpmnElement="Event_1jfm8hw">
+        <dc:Bounds x="522" y="202" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="502" y="245" width="82" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vemedj_di" bpmnElement="Activity_1vemedj">
+        <dc:Bounds x="500" y="420" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1obaf44_di" bpmnElement="Activity_1o3kgis">
+        <dc:Bounds x="630" y="287" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0163esj_di" bpmnElement="Activity_0pnf0jk">
+        <dc:Bounds x="500" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0uofjk1_di" bpmnElement="Event_0uofjk1">
+        <dc:Bounds x="642" y="442" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_05vcy7r_di" bpmnElement="Flow_05vcy7r">
+        <di:waypoint x="215" y="327" />
+        <di:waypoint x="270" y="327" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1tdryi2_di" bpmnElement="Flow_1tdryi2">
+        <di:waypoint x="370" y="327" />
+        <di:waypoint x="415" y="327" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0lxgtds_di" bpmnElement="Flow_0lxgtds">
+        <di:waypoint x="465" y="327" />
+        <di:waypoint x="630" y="327" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1svyloj_di" bpmnElement="Flow_1svyloj">
+        <di:waypoint x="440" y="302" />
+        <di:waypoint x="440" y="120" />
+        <di:waypoint x="500" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_114vlns_di" bpmnElement="Flow_114vlns">
+        <di:waypoint x="440" y="352" />
+        <di:waypoint x="440" y="460" />
+        <di:waypoint x="500" y="460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0y58vcc_di" bpmnElement="Flow_0y58vcc">
+        <di:waypoint x="440" y="302" />
+        <di:waypoint x="440" y="220" />
+        <di:waypoint x="522" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0gta5mc_di" bpmnElement="Flow_0gta5mc">
+        <di:waypoint x="730" y="327" />
+        <di:waypoint x="982" y="327" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18gs62p_di" bpmnElement="Flow_18gs62p">
+        <di:waypoint x="600" y="120" />
+        <di:waypoint x="680" y="120" />
+        <di:waypoint x="680" y="287" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1geuuff_di" bpmnElement="Flow_1geuuff">
+        <di:waypoint x="558" y="220" />
+        <di:waypoint x="650" y="220" />
+        <di:waypoint x="650" y="287" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0kcd62x_di" bpmnElement="Flow_0kcd62x">
+        <di:waypoint x="600" y="460" />
+        <di:waypoint x="642" y="460" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
