@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -47,4 +48,22 @@ public class ProcessEntity {
     List<Notification> notifications;
     @OneToMany(mappedBy = "process", cascade = CascadeType.ALL, orphanRemoval = true)
     List<ProcessJsonAttr> processJsonAttrs;
+
+    public ProcessJsonAttr getLastProcessJsonAttr() {
+        if(getProcessJsonAttrs() != null && !getProcessJsonAttrs().isEmpty()) {
+            return getProcessJsonAttrs().get(getProcessJsonAttrs().size() - 1);
+        }
+        return null;
+    }
+
+    public void addStage(String stage) {
+        if(getStages() == null) {
+            setStages(new ArrayList<>());
+        }
+        getStages().add(ProcessStageEntity.builder()
+                        .process(this)
+                        .stageBegin(new Date())
+                        .mnemonic(stage)
+                .build());
+    }
 }

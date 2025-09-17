@@ -10,6 +10,9 @@ import com.example.elnprocesspetproject.model.ElnModel;
 import com.example.elnprocesspetproject.model.base.Eln;
 import com.example.elnprocesspetproject.model.base.Person;
 import com.example.elnprocesspetproject.services.ProcessService;
+import org.camunda.bpm.engine.ProcessEngine;
+import org.camunda.bpm.engine.ProcessEngines;
+import org.camunda.bpm.engine.runtime.ProcessInstantiationBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +28,10 @@ public class Controller {
 
     @GetMapping("save_process")
     private void saveProcess() {
+        ProcessEngine engine = ProcessEngines.getDefaultProcessEngine();
+        ProcessInstantiationBuilder instance = engine.getRuntimeService().createProcessInstanceByKey("eln_process_v1");
+
+
         ProcessEntity process = new ProcessEntity();
 
         process.setStatus(ProcessStatus.PROCESSING);
@@ -79,6 +86,11 @@ public class Controller {
         process.setProcessJsonAttrs(processJsonAttrs);
 
 
+
+
         processService.save(process);
+        instance.setVariable("process_id", process.getId());
+        instance.executeWithVariablesInReturn();
+
     }
 }

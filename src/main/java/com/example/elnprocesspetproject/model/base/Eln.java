@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -14,5 +15,6 @@ public class Eln implements Serializable {
     String code;
     String reason;
     String state;
+    LocalDate lnDate;
 
 }
